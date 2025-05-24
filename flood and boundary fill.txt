@@ -1,0 +1,98 @@
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include<windows.h>
+#include <GL/glut.h>
+#endif
+
+#include <stdlib.h>
+// Window dimensions
+const int width = 800;
+const int height = 600;
+// Function to set a pixel's color
+void setPixel(int x, int y, float red, float green, float blue) {
+glBegin(GL_POINTS);
+glColor3f(red, green, blue);
+glVertex2i(x, y);
+glEnd();
+glFlush();
+}
+// Function to get a pixel's color
+void getPixelColor(int x, int y, float* color) {
+glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, color);
+
+}
+// Flood fill algorithm
+void floodFill(int x, int y, float* fillColor, float* borderColor) {
+float color[3];
+getPixelColor(x, y, color);
+// Check if the current pixel is the border color or already filled
+if ((color[0] == borderColor[0] && color[1] == borderColor[1] && color[2] ==
+borderColor[2]) ||
+(color[0] == fillColor[0] && color[1] == fillColor[1] && color[2] == fillColor[2])) {
+return;
+}
+// Fill the pixel
+setPixel(x, y, fillColor[0], fillColor[1], fillColor[2]);
+// Recur for neighboring pixels
+floodFill(x + 1, y, fillColor, borderColor);
+floodFill(x - 1, y, fillColor, borderColor);
+floodFill(x, y + 1, fillColor, borderColor);
+floodFill(x, y - 1, fillColor, borderColor);
+}
+// Boundary fill algorithm
+void boundaryFill(int x, int y, float* fillColor, float* boundaryColor) {
+float color[3];
+getPixelColor(x, y, color);
+// Check if the current pixel is the boundary color or already filled
+if ((color[0] == boundaryColor[0] && color[1] == boundaryColor[1] && color[2] ==
+boundaryColor[2]) ||
+(color[0] == fillColor[0] && color[1] == fillColor[1] && color[2] == fillColor[2])) {
+return;
+
+}
+// Fill the pixel
+setPixel(x, y, fillColor[0], fillColor[1], fillColor[2]);
+// Recur for neighboring pixels
+boundaryFill(x + 1, y, fillColor, boundaryColor);
+boundaryFill(x - 1, y, fillColor, boundaryColor);
+boundaryFill(x, y + 1, fillColor, boundaryColor);
+boundaryFill(x, y - 1, fillColor, boundaryColor);
+}
+void display() {
+glClear(GL_COLOR_BUFFER_BIT);
+// Define boundary color and fill color
+float boundaryColor[3] = {1.0, 0.0, 0.0}; // Red
+float fillColor[3] = {0.0, 1.0, 0.0}; // Green
+// Draw a simple rectangle boundary
+glColor3f(boundaryColor[0], boundaryColor[1], boundaryColor[2]);
+glBegin(GL_LINE_LOOP);
+glVertex2i(300, 300);
+glVertex2i(500, 300);
+glVertex2i(500, 500);
+glVertex2i(300, 500);
+glEnd();
+glFlush();
+// Start flood fill or boundary fill inside the rectangle
+// Uncomment the desired fill algorithm
+// floodFill(400, 400, fillColor, boundaryColor);
+boundaryFill(400, 400, fillColor, boundaryColor);// Define boundary color and fill color
+
+glFlush();
+
+}
+void init() {
+glClearColor(1.0, 1.0, 1.0, 1.0); // White background
+glMatrixMode(GL_PROJECTION);
+gluOrtho2D(0.0, width, 0.0, height);
+}
+int main(int argc, char** argv) {
+glutInit(&argc, argv);
+glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+glutInitWindowSize(width, height);
+glutCreateWindow("Flood Fill and Boundary Fill Algorithm in OpenGL");
+init();
+glutDisplayFunc(display);
+glutMainLoop();
+return 0;
+}

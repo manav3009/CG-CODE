@@ -1,0 +1,105 @@
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include<windows.h>
+#include <GL/glut.h>
+#endif
+
+#include<iostream>
+#include<math.h>
+#define h 700
+#define w 700
+
+using namespace std;
+
+GLint xi, xii, yi, yii;
+
+void setpixel(GLint x, GLint y) {
+glColor3f(0.0, 0.0, 1.0);
+glBegin(GL_POINTS);
+glVertex2f(x, y);
+glEnd();
+glFlush();
+
+}
+
+void initialize() {
+glClearColor(0.6, 0.6, 0.6, 0.0);
+glClear(GL_COLOR_BUFFER_BIT);
+glMatrixMode(GL_PROJECTION);
+glLoadIdentity();
+gluOrtho2D(-w/2, w/2, -h/2, h/2);
+}
+
+void choice() {
+for (int i = -w; i < w; i++) {
+setpixel(0, i);
+setpixel(i, 0);
+}
+}
+
+class line {
+public:
+void dda(int item) {
+GLfloat dx, dy, step, x, y;
+GLfloat xinc, yinc;
+int i;
+dx = xii - xi;
+dy = yii - yi;
+step = max(abs(dx), abs(dy));
+xinc = (float)dx / step;
+yinc = (float)dy / step;
+
+x = xi; y = yi;
+setpixel(x, y);
+for (i = 1; i <= step; i++) {
+x += xinc;
+y += yinc;
+int xt = x + 0.5, yt = y + 0.5;
+if (item == 1 || (item == 2 && i % 10 < 5) || (item == 3 && (i % 9 >= 2 && i % 9 != 7))) {
+setpixel(xt, yt);
+}
+if (item == 4) {
+glPointSize(4.0);
+setpixel(xt, yt);
+glPointSize(2.0);
+}
+}
+}
+};
+
+line l;
+
+void menu(int item) {
+l.dda(item);
+}
+
+void mouse(int button, int state, int x, int y) {
+if (state == GLUT_DOWN) {
+if (button == GLUT_LEFT_BUTTON) {
+xi = x - 350; yi = 350 - y;
+
+}
+if (button == GLUT_RIGHT_BUTTON) {
+xii = x - 350; yii = 350 - y;
+}
+}
+}
+
+int main(int argc, char **argv) {
+glutInit(&argc, argv);
+glutInitWindowSize(h, w);
+glutInitWindowPosition(100, 0);
+glutCreateWindow("DDA Line Drawing");
+initialize();
+glutDisplayFunc(choice);
+glutMouseFunc(mouse);
+glutCreateMenu(menu);
+glutAddMenuEntry("DDA Simple", 1);
+glutAddMenuEntry("DDA Dashed", 2);
+glutAddMenuEntry("DDA Dash Dot", 3);
+glutAddMenuEntry("DDA Thick", 4);
+glutAttachMenu(GLUT_MIDDLE_BUTTON);
+glutMainLoop();
+return 0;
+}

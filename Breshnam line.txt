@@ -1,0 +1,112 @@
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include<windows.h>
+#include <GL/glut.h>
+#endif
+
+#include<iostream>
+#include<math.h>
+#define h 700
+#define w 700
+
+using namespace std;
+
+GLint xi, xii, yi, yii;
+
+void setpixel(GLint x, GLint y) {
+glColor3f(0.0, 0.0, 1.0);
+glBegin(GL_POINTS);
+glVertex2f(x, y);
+glEnd();
+glFlush();
+
+}
+
+void initialize() {
+glClearColor(0.6, 0.6, 0.6, 0.0);
+glClear(GL_COLOR_BUFFER_BIT);
+glMatrixMode(GL_PROJECTION);
+glLoadIdentity();
+gluOrtho2D(-w/2, w/2, -h/2, h/2);
+}
+
+void choice() {
+for (int i = -w; i < w; i++) {
+setpixel(0, i);
+setpixel(i, 0);
+}
+}
+
+class line {
+public:
+void bresenham(int item) {
+int dx = abs(xii - xi);
+int dy = abs(yii - yi);
+int sx = xi < xii ? 1 : -1;
+int sy = yi < yii ? 1 : -1;
+int err = dx - dy;
+int x = xi, y = yi, i = 0;
+
+while (true) {
+
+if (item == 1 || (item == 2 && i % 10 < 5) || (item == 3 && (i % 9 >= 2 && i % 9 != 7))) {
+setpixel(x, y);
+}
+if (item == 4) {
+glPointSize(4.0);
+setpixel(x, y);
+glPointSize(2.0);
+}
+
+if (x == xii && y == yii) break;
+int e2 = 2 * err;
+if (e2 > -dy) {
+err -= dy;
+x += sx;
+}
+if (e2 < dx) {
+err += dx;
+y += sy;
+}
+i++;
+}
+}
+};
+
+line l;
+
+void menu(int item) {
+l.bresenham(item);
+
+}
+
+void mouse(int button, int state, int x, int y) {
+if (state == GLUT_DOWN) {
+if (button == GLUT_LEFT_BUTTON) {
+xi = x - 350; yi = 350 - y;
+}
+if (button == GLUT_RIGHT_BUTTON) {
+xii = x - 350; yii = 350 - y;
+}
+}
+}
+
+int main(int argc, char **argv) {
+glutInit(&argc, argv);
+glutInitWindowSize(h, w);
+glutInitWindowPosition(100, 0);
+glutCreateWindow("Bresenham Line Drawing");
+initialize();
+glutDisplayFunc(choice);
+glutMouseFunc(mouse);
+glutCreateMenu(menu);
+glutAddMenuEntry("Bresenham Simple", 1);
+glutAddMenuEntry("Bresenham Dashed", 2);
+glutAddMenuEntry("Bresenham Dash Dot", 3);
+glutAddMenuEntry("Bresenham Thick", 4);
+glutAttachMenu(GLUT_MIDDLE_BUTTON);
+glutMainLoop();
+
+return 0;
+}
